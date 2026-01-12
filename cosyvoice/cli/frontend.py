@@ -167,8 +167,8 @@ class CosyVoiceFrontEnd:
 
     def frontend_zero_shot(self, tts_text, prompt_text, prompt_wav, resample_rate, zero_shot_spk_id):
         tts_text_token, tts_text_token_len = self._extract_text_token(tts_text)
+        prompt_text_token, prompt_text_token_len = self._extract_text_token(prompt_text)
         if zero_shot_spk_id == '':
-            prompt_text_token, prompt_text_token_len = self._extract_text_token(prompt_text)
             speech_feat, speech_feat_len = self._extract_speech_feat(prompt_wav)
             speech_token, speech_token_len = self._extract_speech_token(prompt_wav)
             if resample_rate == 24000:
@@ -184,6 +184,8 @@ class CosyVoiceFrontEnd:
                            'llm_embedding': embedding, 'flow_embedding': embedding}
         else:
             model_input = {**self.spk2info[zero_shot_spk_id]}
+            model_input['prompt_text'] = prompt_text_token
+            model_input['prompt_text_len'] = prompt_text_token_len
         model_input['text'] = tts_text_token
         model_input['text_len'] = tts_text_token_len
         return model_input
@@ -208,8 +210,11 @@ class CosyVoiceFrontEnd:
 
     def frontend_instruct2(self, tts_text, instruct_text, prompt_wav, resample_rate, zero_shot_spk_id):
         model_input = self.frontend_zero_shot(tts_text, instruct_text, prompt_wav, resample_rate, zero_shot_spk_id)
-        del model_input['llm_prompt_speech_token']
-        del model_input['llm_prompt_speech_token_len']
+        # del model_input['llm_prompt_speech_token']
+        # del model_input['llm_prompt_speech_token_len']
+
+        model_input.pop('llm_prompt_speech_token', None)
+        model_input.pop('llm_prompt_speech_token_len', None)
         return model_input
 
     def frontend_vc(self, source_speech_16k, prompt_wav, resample_rate):

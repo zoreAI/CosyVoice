@@ -74,6 +74,25 @@ class CosyVoice:
         self.frontend.spk2info[zero_shot_spk_id] = model_input
         return True
 
+    def del_zero_shot_spk(self, zero_shot_spk_id):
+        """
+        删除指定的零样本说话人信息
+
+        Args:
+            zero_shot_spk_id: 要删除的说话人ID
+
+        Returns:
+            bool: 删除成功返回True，说话人不存在返回False
+        """
+        if zero_shot_spk_id == '':
+            raise ValueError('do not use empty zero_shot_spk_id')
+
+        # 使用pop方法安全删除，避免KeyError[1,2](@ref)
+        if zero_shot_spk_id in self.frontend.spk2info:
+            self.frontend.spk2info.pop(zero_shot_spk_id)
+            return True
+        return False
+
     def save_spkinfo(self):
         torch.save(self.frontend.spk2info, '{}/spk2info.pt'.format(self.model_dir))
 
